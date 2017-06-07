@@ -29,7 +29,7 @@ namespace Hardware
                         throw new Exception("Invalid Handle");
                     }
                     Externs.SP_DEVINFO_DATA DeviceInfoData;
-                    DeviceInfoData = new Externs.SP_DEVINFO_DATA();
+                    DeviceInfoData = new Externs.SP_DEVINFO_DATA(); 
                     if (Environment.Is64BitOperatingSystem)
                         DeviceInfoData.cbSize = 32;//(16,4,4,4)  
                     else
