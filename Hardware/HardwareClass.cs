@@ -21,7 +21,7 @@ namespace Hardware
                 try
                 {
                     Guid myGUID = System.Guid.Empty;
-                    Externs.    (out myGUID);
+                    Externs.HidD_GetHidGuid(out myGUID);
                     IntPtr hDevInfo = Externs.SetupDiGetClassDevsA(ref myGUID, 0, IntPtr.Zero, Externs.DIGCF_ALLCLASSES | Externs.DIGCF_PRESENT);
                     Debug.WriteLine("枚举设备 : " + Externs.GetLastError() + "---" + Marshal.GetLastWin32Error() + hDevInfo.ToInt64());
                     if (hDevInfo.ToInt64() == Externs.INVALID_HANDLE_VALUE)
@@ -29,7 +29,7 @@ namespace Hardware
                         throw new Exception("Invalid Handle");
                     }
                     Externs.SP_DEVINFO_DATA DeviceInfoData;
-                    DeviceInfoData = new Externs.SP_DEVINFO_DATA(); 
+                    DeviceInfoData = new Externs.SP_DEVINFO_DATA();
                     if (Environment.Is64BitOperatingSystem)
                         DeviceInfoData.cbSize = 32;//(16,4,4,4)  
                     else
