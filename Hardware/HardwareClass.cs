@@ -8,6 +8,7 @@ namespace Hardware
 {
     public class HardwareClass
     {
+        public static readonly Guid GUID_DEVCLASS_PORTS = new Guid("{0x4d36e978, 0xe325, 0x11ce, {0xbf, 0xc1, 0x08, 0x00, 0x2b, 0xe1, 0x03, 0x18}}");
         #region 属性
         /// <summary>
         /// 返回所有硬件信息列表
@@ -20,9 +21,23 @@ namespace Hardware
                 List<string> HWList = new List<string>();
                 try
                 {
-                    Guid myGUID = System.Guid.Empty;
+                    //Guid myGUID = System.Guid.Empty;
+                    Guid myGUID = new Guid("86e0d1e0-8089-11d0-9ce4-08003e301f73");
+
                     Externs.HidD_GetHidGuid(out myGUID);
-                    IntPtr hDevInfo = Externs.SetupDiGetClassDevsA(ref myGUID, 0, IntPtr.Zero, Externs.DIGCF_ALLCLASSES | Externs.DIGCF_PRESENT);
+                    //Guid usbCOM = new Guid("4d36e978-e325-11ce-bfc1-08002be10318");
+                    // IntPtr hDevInfo = Externs.SetupDiGetClassDevsA(ref myGUID, 0, IntPtr.Zero, Externs.DIGCF_ALLCLASSES | Externs.DIGCF_PRESENT);
+
+                    IntPtr hDevInfo = Externs.SetupDiGetClassDevs(myGUID, 0, IntPtr.Zero, Externs.DIGCF_ALLCLASSES | Externs.DIGCF_PRESENT | 0x00000008 | 0x00000010);
+                    if (hDevInfo.ToInt64() == Externs.INVALID_HANDLE_VALUE)
+                    {
+                        throw new Exception("Invalid Handle");
+                    }
+                    else
+                    {
+
+                    }
+
                     Debug.WriteLine("枚举设备 : " + Externs.GetLastError() + "---" + Marshal.GetLastWin32Error() + hDevInfo.ToInt64());
                     if (hDevInfo.ToInt64() == Externs.INVALID_HANDLE_VALUE)
                     {
@@ -42,7 +57,7 @@ namespace Hardware
                     DeviceName.Capacity = Externs.MAX_DEV_LEN;
                     for (i = 0; Externs.SetupDiEnumDeviceInfo(hDevInfo, i, DeviceInfoData); i++)
                     {
-                        bool resName = Externs.SetupDiGetDeviceRegistryProperty(hDevInfo, DeviceInfoData, Externs.SPDRP_DEVICEDESC, 0, DeviceName, Externs.MAX_DEV_LEN, IntPtr.Zero);
+                        bool resName = Externs.SetupDiGetDeviceRegistryProperty(hDevInfo, DeviceInfoData, Externs.SPDRP_HARDWAREID, 0, DeviceName, Externs.MAX_DEV_LEN, IntPtr.Zero);
                         //while (Externs.SetupDiGetDeviceRegistryProperty(hDevInfo, DeviceInfoData, Externs.SPDRP_DEVICEDESC, 0, DeviceName, Externs.MAX_DEV_LEN, IntPtr.Zero) == false)
                         //{
                         //    int iss = 0;
@@ -59,7 +74,6 @@ namespace Hardware
                 return HWList.ToArray();
             }
         }
-
         #endregion
 
         #region 公共事件
