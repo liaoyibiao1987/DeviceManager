@@ -10,8 +10,13 @@ namespace Hardware
     /// </summary>
     public class Externs
     {
-        public const int DIGCF_ALLCLASSES = (0x00000004);
-        public const int DIGCF_PRESENT = (0x00000002);
+        public const int DIGCF_NOSET = 0x00000000;
+        public const int DIGCF_DEFAULT = 0x00000001;
+        public const int DIGCF_PRESENT = 0x00000002;
+        public const int DIGCF_ALLCLASSES = 0x00000004;
+        public const int DIGCF_PROFILE = 0x00000008;
+        public const int DIGCF_DEVICEINTERFACE = 0x00000010;
+
         public const int INVALID_HANDLE_VALUE = -1;
         public const int MAX_DEV_LEN = 1000;
         public const int DEVICE_NOTIFY_WINDOW_HANDLE = (0x00000000);
@@ -154,12 +159,22 @@ namespace Hardware
         [DllImport("setupapi.dll", CharSet = CharSet.Auto)]
         public static extern Boolean SetupDiCallClassInstaller(UInt32 InstallFunction, IntPtr DeviceInfoSet, IntPtr DeviceInfoData);
 
+        [DllImport("setupapi.dll")]
+        public static extern Boolean SetupDiClassGuidsFromNameA(string ClassN, ref Guid guids, UInt32 ClassNameSize, ref UInt32 ReqSize);
+
         /// <summary>
         /// Gets the GUID that Windows uses to represent HID class devices
         /// </summary>
         /// <param name="gHid">An out parameter to take the Guid</param>
         [DllImport("hid.dll", SetLastError = true)]
         public static extern void HidD_GetHidGuid(out Guid gHid);
+
+        [DllImport("setupapi.dll")]
+        public static extern Boolean SetupDiGetDeviceRegistryPropertyA(IntPtr DeviceInfoSet, SP_DEVINFO_DATA DeviceInfoData, UInt32 Property, UInt32 PropertyRegDataType, StringBuilder PropertyBuffer, UInt32 PropertyBufferSize, IntPtr RequiredSize);
+
+        [DllImport("setupapi.dll")]
+        public static extern IntPtr SetupDiGetClassDevsExW(Guid ClassGuid, string Enumerator, IntPtr hwndParent, UInt32 Flags, SP_DEVINFO_DATA DeviceInfoSet, string MachineName, int Reserved);
+
 
         [DllImport("kernel32.dll")]
         public static extern uint GetLastError();

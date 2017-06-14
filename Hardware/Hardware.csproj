@@ -92,6 +92,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="DeviceEntity.cs" />
     <Compile Include="HardwareClass.cs" />
     <Compile Include="Externs.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

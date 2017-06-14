@@ -21,7 +21,7 @@ namespace DeviceManager
         private void Form1_Load(object sender, EventArgs e)
         {
             //枚举硬件列表
-            string[] HardList = hc.List;
+            string[] HardList = hc.DevClassList();
             foreach (string s in HardList)
             {
                 listBox1.Items.Add(s);
