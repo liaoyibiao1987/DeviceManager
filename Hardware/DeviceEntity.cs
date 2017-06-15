@@ -76,6 +76,20 @@ namespace Hardware
                 installState = value;
             }
         }
-        
+
+        private bool isHiddenDevice = false;
+        public bool IsHiddenDevice
+        {
+            get
+            {
+                return isHiddenDevice;
+            }
+
+            set
+            {
+                isHiddenDevice = value;
+            }
+        }
+
     }
 }

@@ -32,6 +32,7 @@
             this.label1 = new System.Windows.Forms.Label();
             this.btnGetNomarlDevice = new System.Windows.Forms.Button();
             this.btnGetAllDevice = new System.Windows.Forms.Button();
+            this.btnGetHiddenDevice = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // btnEnumerateDevices
@@ -73,11 +74,22 @@
             this.btnGetAllDevice.UseVisualStyleBackColor = true;
             this.btnGetAllDevice.Click += new System.EventHandler(this.btnGetAllDevice_Click);
             // 
+            // btnGetHiddenDevice
+            // 
+            this.btnGetHiddenDevice.Location = new System.Drawing.Point(2, 139);
+            this.btnGetHiddenDevice.Name = "btnGetHiddenDevice";
+            this.btnGetHiddenDevice.Size = new System.Drawing.Size(157, 43);
+            this.btnGetHiddenDevice.TabIndex = 2;
+            this.btnGetHiddenDevice.Text = "GetHiddenDevice";
+            this.btnGetHiddenDevice.UseVisualStyleBackColor = true;
+            this.btnGetHiddenDevice.Click += new System.EventHandler(this.btnGetHiddenDevice_Click);
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(572, 262);
+            this.Controls.Add(this.btnGetHiddenDevice);
             this.Controls.Add(this.btnGetAllDevice);
             this.Controls.Add(this.btnGetNomarlDevice);
             this.Controls.Add(this.label1);
@@ -95,5 +107,6 @@
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.Button btnGetNomarlDevice;
         private System.Windows.Forms.Button btnGetAllDevice;
+        private System.Windows.Forms.Button btnGetHiddenDevice;
     }
 }

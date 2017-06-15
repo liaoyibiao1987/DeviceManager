@@ -39,5 +39,11 @@ namespace DeviceManager
             List<DeviceEntity> list = HardwareClass.GetAllDevice();
             int x = 0;
         }
+
+        private void btnGetHiddenDevice_Click(object sender, EventArgs e)
+        {
+            List<DeviceEntity> list = HardwareClass.GetHiddenDevice();
+            int x = 0;
+        }
     }
 }

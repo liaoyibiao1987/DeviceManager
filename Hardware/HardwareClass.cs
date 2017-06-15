@@ -17,50 +17,51 @@ namespace Hardware
             List<string> HWList = new List<string>();
             try
             {
-                //Guid myGUID = System.Guid.Empty;
-                Guid myGUID = Guid.Empty;
-
-                //Externs.HidD_GetHidGuid(out myGUID);
-                // IntPtr hDevInfo = Externs.SetupDiGetClassDevsA(ref myGUID, 0, IntPtr.Zero, Externs.DIGCF_ALLCLASSES | Externs.DIGCF_PRESENT);
-
-                IntPtr hDevInfo = Externs.SetupDiGetClassDevs(myGUID, 0, IntPtr.Zero, Externs.DIGCF_ALLCLASSES | Externs.DIGCF_PRESENT | 0x00000008 | 0x00000010);
-                if (hDevInfo.ToInt64() == Externs.INVALID_HANDLE_VALUE)
+                UInt32 RequiredSize = 0;
+                Guid guid = Guid.Empty;
+                Guid[] guids = new Guid[1];
+                bool res = SetupDiClassGuidsFromNameA("ports", ref guids[0], RequiredSize, ref RequiredSize);
+                if (res == false)
                 {
-                    throw new Exception("Invalid Handle");
-                }
-                else
-                {
+                    guids = new Guid[RequiredSize];
+                    res = SetupDiClassGuidsFromNameA("ports", ref guids[0], RequiredSize, ref RequiredSize);
 
+                    if (!res || RequiredSize == 0)
+                    {
+                        Debug.WriteLine("类型不正确");
+                    }
                 }
+                if (res == true)
+                {
+                    List<DeviceEntity> list = new List<Hardware.DeviceEntity>();
+                    Guid myGUID = System.Guid.Empty;
+                    IntPtr hDevInfo = SetupDiGetClassDevs(guids[0], 0, IntPtr.Zero, DIGCF_NOSET);
+                    Debug.WriteLine("枚举设备 : " + Externs.GetLastError() + "---" + Marshal.GetLastWin32Error() + hDevInfo.ToInt64());
+                    if (hDevInfo.ToInt64() == Externs.INVALID_HANDLE_VALUE)
+                    {
+                        throw new Exception("Invalid Handle");
+                    }
+                    else
+                    {
+                        Externs.SP_DEVINFO_DATA DeviceInfoData;
+                        DeviceInfoData = new Externs.SP_DEVINFO_DATA();
+                        DeviceInfoData.cbSize = Marshal.SizeOf(DeviceInfoData);
+                        DeviceInfoData.devInst = 0;
+                        DeviceInfoData.classGuid = System.Guid.Empty;
+                        DeviceInfoData.reserved = 0;
 
-                Debug.WriteLine("枚举设备 : " + Externs.GetLastError() + "---" + Marshal.GetLastWin32Error() + hDevInfo.ToInt64());
-                if (hDevInfo.ToInt64() == Externs.INVALID_HANDLE_VALUE)
-                {
-                    throw new Exception("Invalid Handle");
+                        StringBuilder DeviceID = new StringBuilder("", 254);
+                        for (uint i = 0; Externs.SetupDiEnumDeviceInfo(hDevInfo, i, DeviceInfoData); i++)
+                        {
+                            if (CM_Get_Device_IDA(DeviceInfoData.devInst, DeviceID, 254, 0) == CR_SUCCESS)
+                            {
+                                HWList.Add(DeviceID.ToString());
+                            }
+                        }
+                    }
+
+                    Externs.SetupDiDestroyDeviceInfoList(hDevInfo);
                 }
-                Externs.SP_DEVINFO_DATA DeviceInfoData;
-                DeviceInfoData = new Externs.SP_DEVINFO_DATA();
-                if (Environment.Is64BitOperatingSystem)
-                    DeviceInfoData.cbSize = 32;//(16,4,4,4)  
-                else
-                    DeviceInfoData.cbSize = 28;
-                DeviceInfoData.devInst = 0;
-                DeviceInfoData.classGuid = System.Guid.Empty;
-                DeviceInfoData.reserved = 0;
-                UInt32 i;
-                StringBuilder DeviceName = new StringBuilder("");
-                DeviceName.Capacity = Externs.MAX_DEV_LEN;
-                for (i = 0; Externs.SetupDiEnumDeviceInfo(hDevInfo, i, DeviceInfoData); i++)
-                {
-                    bool resName = Externs.SetupDiGetDeviceRegistryProperty(hDevInfo, DeviceInfoData, Externs.SPDRP_ADDRESS, 0, DeviceName, Externs.MAX_DEV_LEN, IntPtr.Zero);
-                    //while (Externs.SetupDiGetDeviceRegistryProperty(hDevInfo, DeviceInfoData, Externs.SPDRP_DEVICEDESC, 0, DeviceName, Externs.MAX_DEV_LEN, IntPtr.Zero) == false)
-                    //{
-                    //    int iss = 0;
-                    //    //Skip
-                    //}
-                    HWList.Add(DeviceName.ToString());
-                }
-                Externs.SetupDiDestroyDeviceInfoList(hDevInfo);
             }
             catch (Exception ex)
             {
@@ -88,7 +89,8 @@ namespace Hardware
                     //Guid usbCOM = new Guid("4d36e978-e325-11ce-bfc1-08002be10318");
                     // IntPtr hDevInfo = Externs.SetupDiGetClassDevsA(ref myGUID, 0, IntPtr.Zero, Externs.DIGCF_ALLCLASSES | Externs.DIGCF_PRESENT);
 
-                    IntPtr hDevInfo = Externs.SetupDiGetClassDevs(myGUID, 0, IntPtr.Zero, Externs.DIGCF_ALLCLASSES | Externs.DIGCF_PRESENT | 0x00000008 | 0x00000010);
+                    //IntPtr hDevInfo = Externs.SetupDiGetClassDevs(myGUID, 0, IntPtr.Zero, Externs.DIGCF_ALLCLASSES | Externs.DIGCF_PRESENT | 0x00000008 | 0x00000010);
+                    IntPtr hDevInfo = Externs.SetupDiGetClassDevs(myGUID, 0, IntPtr.Zero, Externs.DIGCF_NOSET);
                     if (hDevInfo.ToInt64() == Externs.INVALID_HANDLE_VALUE)
                     {
                         throw new Exception("Invalid Handle");
@@ -117,13 +119,21 @@ namespace Hardware
                     DeviceName.Capacity = Externs.MAX_DEV_LEN;
                     for (i = 0; Externs.SetupDiEnumDeviceInfo(hDevInfo, i, DeviceInfoData); i++)
                     {
-                        bool resName = Externs.SetupDiGetDeviceRegistryProperty(hDevInfo, DeviceInfoData, Externs.SPDRP_HARDWAREID, 0, DeviceName, Externs.MAX_DEV_LEN, IntPtr.Zero);
+                        //bool resName = Externs.SetupDiGetDeviceRegistryProperty(hDevInfo, DeviceInfoData, Externs.SPDRP_HARDWAREID, 0, DeviceName, Externs.MAX_DEV_LEN, IntPtr.Zero);
                         //while (Externs.SetupDiGetDeviceRegistryProperty(hDevInfo, DeviceInfoData, Externs.SPDRP_DEVICEDESC, 0, DeviceName, Externs.MAX_DEV_LEN, IntPtr.Zero) == false)
                         //{
                         //    int iss = 0;
                         //    //Skip
                         //}
-                        HWList.Add(DeviceName.ToString());
+                        bool resName = SetupDiGetDeviceRegistryPropertyA(hDevInfo, DeviceInfoData, SPDRP_FRIENDLYNAME, 0, DeviceName, MAX_DEV_LEN, IntPtr.Zero);
+                        if (!resName)
+                        {
+                        }
+                        else
+                        {
+                            HWList.Add(DeviceName.ToString());
+                        }
+
                     }
                     Externs.SetupDiDestroyDeviceInfoList(hDevInfo);
                 }
@@ -366,9 +376,11 @@ namespace Hardware
                     DeviceInfoData.devInst = 0;
                     DeviceInfoData.classGuid = System.Guid.Empty;
                     DeviceInfoData.reserved = 0;
-                    var devs = SetupDiGetClassDevsExW(guids[0], null, IntPtr.Zero, DIGCF_NOSET, null, null, 0);
+                    var devs = SetupDiGetClassDevsExW(guids[0], null, IntPtr.Zero, DIGCF_PRESENT, null, null, 0);
                     for (uint i = 0; SetupDiEnumDeviceInfo(devs, i, DeviceInfoData); i++)
                     {
+
+
                         DeviceEntity entity = new DeviceEntity();
                         StringBuilder DeviceName = new StringBuilder("", 254);
                         bool resName = SetupDiGetDeviceRegistryPropertyA(devs, DeviceInfoData, SPDRP_FRIENDLYNAME, 0, DeviceName, MAX_DEV_LEN, IntPtr.Zero);
@@ -381,13 +393,7 @@ namespace Hardware
                         }
 
                         StringBuilder DeviceID = new StringBuilder("", 254);
-                        bool resHardwareID = SetupDiGetDeviceRegistryPropertyA(devs, DeviceInfoData, SPDRP_HARDWAREID, 0, DeviceID, MAX_DEV_LEN, IntPtr.Zero);
-                        if (!resHardwareID)
-                        {
-                            //设备ID未知
-                            DeviceID = new StringBuilder("");
-                        }
-                        else
+                        if (CM_Get_Device_IDA(DeviceInfoData.devInst, DeviceID, 254, 0) == CR_SUCCESS)
                         {
                             entity.DeviceID = DeviceID.ToString();
                         }
@@ -435,6 +441,141 @@ namespace Hardware
             }
 
         }
+
+        public static List<DeviceEntity> GetHiddenDevice()
+        {
+            UInt32 RequiredSize = 0;
+            Guid guid = Guid.Empty;
+            Guid[] guids = new Guid[1];
+            SP_DEVINFO_DATA DeviceInfoData = new SP_DEVINFO_DATA();
+            bool res = SetupDiClassGuidsFromNameA("ports", ref guids[0], RequiredSize, ref RequiredSize);
+            if (res == false)
+            {
+                guids = new Guid[RequiredSize];
+                res = SetupDiClassGuidsFromNameA("ports", ref guids[0], RequiredSize, ref RequiredSize);
+
+                if (!res || RequiredSize == 0)
+                {
+                    Debug.WriteLine("类型不正确");
+                }
+            }
+            if (res == true)
+            {
+                List<DeviceEntity> list = new List<Hardware.DeviceEntity>();
+                List<DeviceEntity> listCurrent = new List<Hardware.DeviceEntity>();
+
+                Guid myGUID = System.Guid.Empty;
+                IntPtr hDevInfo = SetupDiGetClassDevs(guids[0], 0, IntPtr.Zero, DIGCF_NOSET);
+                if (hDevInfo.ToInt64() == -1)
+                {
+                    Debug.WriteLine("SetupDiGetClassDevs: 获取设备错误。");
+                }
+                else
+                {
+                    DeviceInfoData.cbSize = Marshal.SizeOf(DeviceInfoData);
+                    DeviceInfoData.devInst = 0;
+                    DeviceInfoData.classGuid = System.Guid.Empty;
+                    DeviceInfoData.reserved = 0;
+                    var devs = SetupDiGetClassDevsExW(guids[0], null, IntPtr.Zero, DIGCF_NOSET, null, null, 0);
+                    var devsNow = SetupDiGetClassDevsExW(guids[0], null, IntPtr.Zero, DIGCF_PRESENT, null, null, 0);
+                    if (devsNow.ToInt64() != -1)
+                    {
+                        for (uint i = 0; SetupDiEnumDeviceInfo(devsNow, i, DeviceInfoData); i++)
+                        {
+                            DeviceEntity entity = new DeviceEntity();
+                            StringBuilder DeviceName = new StringBuilder("", 254);
+                            bool resName = SetupDiGetDeviceRegistryPropertyA(devs, DeviceInfoData, SPDRP_FRIENDLYNAME, 0, DeviceName, MAX_DEV_LEN, IntPtr.Zero);
+                            if (!resName)
+                            {
+                            }
+                            else
+                            {
+                                entity.DeviceName = DeviceName.ToString();
+                            }
+
+                            StringBuilder DeviceID = new StringBuilder("", 254);
+                            if (CM_Get_Device_IDA(DeviceInfoData.devInst, DeviceID, 254, 0) == CR_SUCCESS)
+                            {
+                                entity.DeviceID = DeviceID.ToString();
+                            }
+                            listCurrent.Add(entity);
+                        }
+                    }
+
+                    for (uint i = 0; SetupDiEnumDeviceInfo(devs, i, DeviceInfoData); i++)
+                    {
+                        DeviceEntity entity = new DeviceEntity();
+
+                        StringBuilder DeviceID = new StringBuilder("", 254);
+                        if (CM_Get_Device_IDA(DeviceInfoData.devInst, DeviceID, 254, 0) == CR_SUCCESS)
+                        {
+                            entity.DeviceID = DeviceID.ToString();
+                        }
+
+                        if (listCurrent.Exists(p => p.DeviceID == DeviceID.ToString()))
+                        {
+                            continue;
+                        }
+                        else
+                        {
+                            StringBuilder DeviceName = new StringBuilder("", 254);
+                            bool resName = SetupDiGetDeviceRegistryPropertyA(devs, DeviceInfoData, SPDRP_FRIENDLYNAME, 0, DeviceName, MAX_DEV_LEN, IntPtr.Zero);
+                            if (!resName)
+                            {
+                            }
+                            else
+                            {
+                                entity.DeviceName = DeviceName.ToString();
+                            }
+
+                            StringBuilder Mfg = new StringBuilder("", 254);
+                            bool resHardwareMfg = SetupDiGetDeviceRegistryPropertyA(devs, DeviceInfoData, SPDRP_MFG, 0, Mfg, MAX_DEV_LEN, IntPtr.Zero);
+                            if (!resHardwareMfg)
+                            {
+                            }
+                            else
+                            {
+                                entity.DevicePIDVID = Mfg.ToString();
+                            }
+
+                            StringBuilder realPath = new StringBuilder("", 2047);
+                            bool resHardwareRealPath = SetupDiGetDeviceRegistryPropertyA(devs, DeviceInfoData, SPDRP_LOCATION_PATHS, 0, realPath, MAX_DEV_LEN, IntPtr.Zero);
+                            if (!resHardwareRealPath)
+                            {
+                            }
+                            else
+                            {
+                                entity.RealTimePath = realPath.ToString();
+                            }
+
+                            StringBuilder installState = new StringBuilder("", 64);
+                            bool resHardwareInstallState = SetupDiGetDeviceRegistryPropertyA(devs, DeviceInfoData, SPDRP_INSTALL_STATE, 0, installState, MAX_DEV_LEN, IntPtr.Zero);
+                            if (!resHardwareInstallState)
+                            {
+                            }
+                            else
+                            {
+                                entity.InstallState = installState.ToString();
+                            }
+                            //bool isHidde = !SetupDiSelectDevice(devsNow, DeviceInfoData);
+                            entity.IsHiddenDevice = true;
+                            list.Add(entity);
+
+                        }
+
+                    }
+                    SetupDiDestroyDeviceInfoList(devs);
+                    SetupDiDestroyDeviceInfoList(devsNow);
+                }
+                return list;
+            }
+            else
+            {
+                return null;
+            }
+
+        }
+
         #endregion
 
         #region 公共事件
@@ -463,41 +604,68 @@ namespace Hardware
         {
             try
             {
-                Guid myGUID = System.Guid.Empty;
-                IntPtr hDevInfo = Externs.SetupDiGetClassDevs(ref myGUID, 0, IntPtr.Zero, Externs.DIGCF_ALLCLASSES | Externs.DIGCF_PRESENT);
-                if (hDevInfo.ToInt32() == Externs.INVALID_HANDLE_VALUE)
+                UInt32 RequiredSize = 0;
+                Guid guid = Guid.Empty;
+                Guid[] guids = new Guid[1];
+                bool res = SetupDiClassGuidsFromNameA("ports", ref guids[0], RequiredSize, ref RequiredSize);
+                if (res == false)
                 {
-                    return false;
-                }
-                Externs.SP_DEVINFO_DATA DeviceInfoData;
-                DeviceInfoData = new Externs.SP_DEVINFO_DATA();
-                DeviceInfoData.cbSize = 28;
-                DeviceInfoData.devInst = 0;
-                DeviceInfoData.classGuid = System.Guid.Empty;
-                DeviceInfoData.reserved = 0;
-                UInt32 i;
-                StringBuilder DeviceName = new StringBuilder("");
-                DeviceName.Capacity = Externs.MAX_DEV_LEN;
-                for (i = 0; Externs.SetupDiEnumDeviceInfo(hDevInfo, i, DeviceInfoData); i++)
-                {
-                    while (!Externs.SetupDiGetDeviceRegistryProperty(hDevInfo, DeviceInfoData, Externs.SPDRP_DEVICEDESC, 0, DeviceName, Externs.MAX_DEV_LEN, IntPtr.Zero))
+                    guids = new Guid[RequiredSize];
+                    res = SetupDiClassGuidsFromNameA("ports", ref guids[0], RequiredSize, ref RequiredSize);
+
+                    if (!res || RequiredSize == 0)
                     {
+                        Debug.WriteLine("类型不正确");
                     }
-                    bool bMatch = true;
-                    foreach (string search in match)
+                }
+                if (res == true)
+                {
+                    List<DeviceEntity> list = new List<Hardware.DeviceEntity>();
+                    Guid myGUID = System.Guid.Empty;
+                    IntPtr hDevInfo = SetupDiGetClassDevs(guids[0], 0, IntPtr.Zero, DIGCF_NOSET);
+                    Debug.WriteLine("枚举设备 : " + Externs.GetLastError() + "---" + Marshal.GetLastWin32Error() + hDevInfo.ToInt64());
+                    if (hDevInfo.ToInt64() == Externs.INVALID_HANDLE_VALUE)
                     {
-                        if (!DeviceName.ToString().ToLower().Contains(search.ToLower()))
+                        throw new Exception("Invalid Handle");
+                    }
+                    else
+                    {
+                        Externs.SP_DEVINFO_DATA DeviceInfoData;
+                        DeviceInfoData = new Externs.SP_DEVINFO_DATA();
+                        DeviceInfoData.cbSize = Marshal.SizeOf(DeviceInfoData);
+                        DeviceInfoData.devInst = 0;
+                        DeviceInfoData.classGuid = System.Guid.Empty;
+                        DeviceInfoData.reserved = 0;
+                        UInt32 i;
+                        StringBuilder DeviceID = new StringBuilder("", 256);
+                        DeviceID.Capacity = Externs.MAX_DEV_LEN;
+                        for (i = 0; Externs.SetupDiEnumDeviceInfo(hDevInfo, i, DeviceInfoData); i++)
                         {
-                            bMatch = false;
-                            break;
+                            //while (!Externs.SetupDiGetDeviceRegistryProperty(hDevInfo, DeviceInfoData, Externs.SPDRP_DEVICEDESC, 0, DeviceName, Externs.MAX_DEV_LEN, IntPtr.Zero))
+                            //{
+                            //}
+                            if (CM_Get_Device_IDA(DeviceInfoData.devInst, DeviceID, 254, 0) == CR_SUCCESS)
+                            {
+                                bool bMatch = true;
+                                foreach (string search in match)
+                                {
+                                    if (!DeviceID.ToString().ToLower().Contains(search.ToLower()))
+                                    {
+                                        bMatch = false;
+                                        break;
+                                    }
+                                }
+                                if (bMatch)
+                                {
+                                    OpenClose(hDevInfo, DeviceInfoData, bEnable);
+                                }
+                            }
+
                         }
-                    }
-                    if (bMatch)
-                    {
-                        OpenClose(hDevInfo, DeviceInfoData, bEnable);
+                        Externs.SetupDiDestroyDeviceInfoList(hDevInfo);
                     }
                 }
-                Externs.SetupDiDestroyDeviceInfoList(hDevInfo);
+
             }
             catch (Exception ex)
             {

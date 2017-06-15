@@ -71,6 +71,94 @@ namespace Hardware
 
         public const int SPDRP_MAXIMUM_PROPERTY = (0x00000025);// Upper bound on ordinals
 
+
+
+        public const int CR_SUCCESS = (0x00000000);
+        public const int CR_DEFAULT = (0x00000001);
+        public const int CR_OUT_OF_MEMORY = (0x00000002);
+        public const int CR_INVALID_POINTER = (0x00000003);
+        public const int CR_INVALID_FLAG = (0x00000004);
+        public const int CR_INVALID_DEVNODE = (0x00000005);
+        public const int CR_INVALID_DEVINST = CR_INVALID_DEVNODE;
+        public const int CR_INVALID_RES_DES = (0x00000006);
+        public const int CR_INVALID_LOG_CONF = (0x00000007);
+        public const int CR_INVALID_ARBITRATOR = (0x00000008);
+        public const int CR_INVALID_NODELIST = (0x00000009);
+        public const int CR_DEVNODE_HAS_REQS = (0x0000000A);
+        public const int CR_DEVINST_HAS_REQS = CR_DEVNODE_HAS_REQS;
+        public const int CR_INVALID_RESOURCEID = (0x0000000B);
+        public const int CR_DLVXD_NOT_FOUND = (0x0000000C);
+        public const int CR_NO_SUCH_DEVNODE = (0x0000000D);
+        public const int CR_NO_SUCH_DEVINST = CR_NO_SUCH_DEVNODE;
+        public const int CR_NO_MORE_LOG_CONF = (0x0000000E);
+        public const int CR_NO_MORE_RES_DES = (0x0000000F);
+        public const int CR_ALREADY_SUCH_DEVNODE = (0x00000010);
+        public const int CR_ALREADY_SUCH_DEVINST = CR_ALREADY_SUCH_DEVNODE;
+        public const int CR_INVALID_RANGE_LIST = (0x00000011);
+        public const int CR_INVALID_RANGE = (0x00000012);
+        public const int CR_FAILURE = (0x00000013);
+        public const int CR_NO_SUCH_LOGICAL_DEV = (0x00000014);
+        public const int CR_CREATE_BLOCKED = (0x00000015);
+        public const int CR_NOT_SYSTEM_VM = (0x00000016);
+        public const int CR_REMOVE_VETOED = (0x00000017);
+        public const int CR_APM_VETOED = (0x00000018);
+        public const int CR_INVALID_LOAD_TYPE = (0x00000019);
+        public const int CR_BUFFER_SMALL = (0x0000001A);
+        public const int CR_NO_ARBITRATOR = (0x0000001B);
+        public const int CR_NO_REGISTRY_HANDLE = (0x0000001C);
+        public const int CR_REGISTRY_ERROR = (0x0000001D);
+        public const int CR_INVALID_DEVICE_ID = (0x0000001E);
+        public const int CR_INVALID_DATA = (0x0000001F);
+        public const int CR_INVALID_API = (0x00000020);
+        public const int CR_DEVLOADER_NOT_READY = (0x00000021);
+        public const int CR_NEED_RESTART = (0x00000022);
+        public const int CR_NO_MORE_HW_PROFILES = (0x00000023);
+        public const int CR_DEVICE_NOT_THERE = (0x00000024);
+        public const int CR_NO_SUCH_VALUE = (0x00000025);
+        public const int CR_WRONG_TYPE = (0x00000026);
+        public const int CR_INVALID_PRIORITY = (0x00000027);
+        public const int CR_NOT_DISABLEABLE = (0x00000028);
+        public const int CR_FREE_RESOURCES = (0x00000029);
+        public const int CR_QUERY_VETOED = (0x0000002A);
+        public const int CR_CANT_SHARE_IRQ = (0x0000002B);
+        public const int CR_NO_DEPENDENT = (0x0000002C);
+        public const int CR_SAME_RESOURCES = (0x0000002D);
+        public const int CR_NO_SUCH_REGISTRY_KEY = (0x0000002E);
+        public const int CR_INVALID_MACHINENAME = (0x0000002F);
+        public const int CR_REMOTE_COMM_FAILURE = (0x00000030);
+        public const int CR_MACHINE_UNAVAILABLE = (0x00000031);
+        public const int CR_NO_CM_SERVICES = (0x00000032);
+        public const int CR_ACCESS_DENIED = (0x00000033);
+        public const int CR_CALL_NOT_IMPLEMENTED = (0x00000034);
+        public const int CR_INVALID_PROPERTY = (0x00000035);
+        public const int CR_DEVICE_INTERFACE_ACTIVE = (0x00000036);
+        public const int CR_NO_SUCH_DEVICE_INTERFACE = (0x00000037);
+        public const int CR_INVALID_REFERENCE_STRING = (0x00000038);
+        public const int CR_INVALID_CONFLICT_LIST = (0x00000039);
+        public const int CR_INVALID_INDEX = (0x0000003A);
+        public const int CR_INVALID_STRUCTURE_SIZE = (0x0000003B);
+        public const int NUM_CR_RESULTS = (0x0000003C);
+
+
+        public const int DIF_SELECTDEVICE = 0x00000001;
+        public const int DIF_INSTALLDEVICE = 0x00000002;
+        public const int DIF_ASSIGNRESOURCES = 0x00000003;
+        public const int DIF_PROPERTIES = 0x00000004;
+        public const int DIF_REMOVE = 0x00000005;
+        public const int DIF_FIRSTTIMESETUP = 0x00000006;
+        public const int DIF_FOUNDDEVICE = 0x00000007;
+        public const int DIF_SELECTCLASSDRIVERS = 0x00000008;
+        public const int DIF_VALIDATECLASSDRIVERS = 0x00000009;
+        public const int DIF_INSTALLCLASSDRIVERS = 0x0000000A;
+        public const int DIF_CALCDISKSPACE = 0x0000000B;
+        public const int DIF_DESTROYPRIVATEDATA = 0x0000000C;
+        public const int DIF_VALIDATEDRIVER = 0x0000000D;
+        public const int DIF_DETECT = 0x0000000F;
+        public const int DIF_INSTALLWIZARD = 0x00000010;
+
+        public const int DI_REMOVEDEVICE_GLOBAL = 0x00000001;
+        public const int DI_REMOVEDEVICE_CONFIGSPECIFIC = 0x00000002;
+
         /// <summary>
         /// 注册设备或者设备类型，在指定的窗口返回相关的信息
         /// </summary>
@@ -173,7 +261,18 @@ namespace Hardware
         public static extern Boolean SetupDiGetDeviceRegistryPropertyA(IntPtr DeviceInfoSet, SP_DEVINFO_DATA DeviceInfoData, UInt32 Property, UInt32 PropertyRegDataType, StringBuilder PropertyBuffer, UInt32 PropertyBufferSize, IntPtr RequiredSize);
 
         [DllImport("setupapi.dll")]
-        public static extern IntPtr SetupDiGetClassDevsExW(Guid ClassGuid, string Enumerator, IntPtr hwndParent, UInt32 Flags, SP_DEVINFO_DATA DeviceInfoSet, string MachineName, int Reserved);
+        public static extern IntPtr SetupDiGetClassDevsExW(Guid ClassGuid, string Enumerator, IntPtr hwndParent, UInt32 Flags, SP_DEVINFO_DATA DeviceInfoDate, string MachineName, int Reserved);
+
+        [DllImport("setupapi.dll")]
+        public static extern bool SetupDiSelectDevice(IntPtr DeviceInfoSet, SP_DEVINFO_DATA DeviceInfoDate);
+
+
+        [DllImport("setupapi.dll", SetLastError = true)]
+        public static extern int CM_Get_Device_ID_Size(out int pulLen, UInt32 dnDevInst, int flags = 0);
+
+        [DllImport("setupapi.dll")]
+        public static extern int CM_Get_Device_IDA(int dnDevInst, StringBuilder Buffer, int BufferLen, int ulFlags);
+
 
 
         [DllImport("kernel32.dll")]
@@ -253,5 +352,13 @@ namespace Hardware
             public int cbSize;
             public int InstallFunction;
         };
+
+        [StructLayout(LayoutKind.Sequential)]
+        public class SP_REMOVEDEVICE_PARAMS
+        {
+            public SP_CLASSINSTALL_HEADER ClassInstallHeader;
+            public int Scope;
+            public int HwProfile;
+        }
     }
 }
