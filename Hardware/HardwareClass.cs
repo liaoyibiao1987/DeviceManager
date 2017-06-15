@@ -657,7 +657,7 @@ namespace Hardware
                                 }
                                 if (bMatch)
                                 {
-                                    OpenClose(hDevInfo, DeviceInfoData, bEnable);
+                                    OpenClose(hDevInfo, DeviceInfoData, bEnable, true);
                                 }
                             }
 
@@ -714,7 +714,7 @@ namespace Hardware
         /// <param name="devInfoData"></param>
         /// <param name="bEnable"></param>
         /// <returns></returns>
-        private bool OpenClose(IntPtr hDevInfo, Externs.SP_DEVINFO_DATA devInfoData, bool bEnable)
+        private bool OpenClose(IntPtr hDevInfo, Externs.SP_DEVINFO_DATA devInfoData, bool bEnable, bool isRemove = false)
         {
             try
             {
@@ -723,6 +723,7 @@ namespace Hardware
                 int szDevInfoData;
                 IntPtr ptrToDevInfoData;
                 Externs.SP_PROPCHANGE_PARAMS SP_PROPCHANGE_PARAMS1 = new Externs.SP_PROPCHANGE_PARAMS();
+                SP_REMOVEDEVICE_PARAMS SP_REMOVEDEVICE_PARAMS1 = new SP_REMOVEDEVICE_PARAMS();
                 if (bEnable)
                 {
                     SP_PROPCHANGE_PARAMS1.ClassInstallHeader.cbSize = Marshal.SizeOf(typeof(Externs.SP_CLASSINSTALL_HEADER));
@@ -750,24 +751,46 @@ namespace Hardware
                 else
                 {
                     SP_PROPCHANGE_PARAMS1.ClassInstallHeader.cbSize = Marshal.SizeOf(typeof(Externs.SP_CLASSINSTALL_HEADER));
-                    SP_PROPCHANGE_PARAMS1.ClassInstallHeader.InstallFunction = Externs.DIF_PROPERTYCHANGE;
-                    SP_PROPCHANGE_PARAMS1.StateChange = Externs.DICS_DISABLE;
-                    SP_PROPCHANGE_PARAMS1.Scope = Externs.DICS_FLAG_CONFIGSPECIFIC;
-                    SP_PROPCHANGE_PARAMS1.HwProfile = 0;
+                    if (isRemove == true)
+                    {
+                        SP_REMOVEDEVICE_PARAMS1.ClassInstallHeader.cbSize = Marshal.SizeOf(typeof(Externs.SP_CLASSINSTALL_HEADER));
+                        SP_REMOVEDEVICE_PARAMS1.ClassInstallHeader.InstallFunction = Externs.DIF_REMOVE;
+                        SP_REMOVEDEVICE_PARAMS1.Scope = Externs.DI_REMOVEDEVICE_GLOBAL;
+                        SP_REMOVEDEVICE_PARAMS1.HwProfile = 0;
+                    }
+                    else
+                    {
+                        SP_PROPCHANGE_PARAMS1.ClassInstallHeader.InstallFunction = Externs.DIF_PROPERTYCHANGE;
+                        SP_PROPCHANGE_PARAMS1.StateChange = Externs.DICS_DISABLE;
+                        SP_PROPCHANGE_PARAMS1.Scope = Externs.DICS_FLAG_CONFIGSPECIFIC;
+                        SP_PROPCHANGE_PARAMS1.HwProfile = 0;
+                    }
                 }
-                szOfPcp = Marshal.SizeOf(SP_PROPCHANGE_PARAMS1);
-                ptrToPcp = Marshal.AllocHGlobal(szOfPcp);
-                Marshal.StructureToPtr(SP_PROPCHANGE_PARAMS1, ptrToPcp, true);
+
                 szDevInfoData = Marshal.SizeOf(devInfoData);
                 ptrToDevInfoData = Marshal.AllocHGlobal(szDevInfoData);
                 Marshal.StructureToPtr(devInfoData, ptrToDevInfoData, true);
-
-                bool rslt1 = Externs.SetupDiSetClassInstallParams(hDevInfo, ptrToDevInfoData, ptrToPcp, Marshal.SizeOf(typeof(Externs.SP_PROPCHANGE_PARAMS)));
-                bool rstl2 = Externs.SetupDiCallClassInstaller(Externs.DIF_PROPERTYCHANGE, hDevInfo, ptrToDevInfoData);
+                bool rslt1 = false;
+                bool rstl2 = false;
+                if (isRemove == true && bEnable == false)
+                {
+                    szOfPcp = Marshal.SizeOf(SP_REMOVEDEVICE_PARAMS1);
+                    ptrToPcp = Marshal.AllocHGlobal(szOfPcp);
+                    Marshal.StructureToPtr(SP_REMOVEDEVICE_PARAMS1, ptrToPcp, true);
+                    rslt1 = Externs.SetupDiSetClassInstallParams(hDevInfo, ptrToDevInfoData, ptrToPcp, Marshal.SizeOf(typeof(Externs.SP_REMOVEDEVICE_PARAMS)));
+                    rstl2 = Externs.SetupDiCallClassInstaller(Externs.DIF_REMOVE, hDevInfo, ptrToDevInfoData);
+                }
+                else
+                {
+                    szOfPcp = Marshal.SizeOf(SP_PROPCHANGE_PARAMS1);
+                    ptrToPcp = Marshal.AllocHGlobal(szOfPcp);
+                    Marshal.StructureToPtr(SP_PROPCHANGE_PARAMS1, ptrToPcp, true);
+                    rslt1 = Externs.SetupDiSetClassInstallParams(hDevInfo, ptrToDevInfoData, ptrToPcp, Marshal.SizeOf(typeof(Externs.SP_PROPCHANGE_PARAMS)));
+                    rstl2 = Externs.SetupDiCallClassInstaller(Externs.DIF_PROPERTYCHANGE, hDevInfo, ptrToDevInfoData);
+                }
                 if ((!rslt1) || (!rstl2))
                 {
                     throw new Exception("不能更改设备状态。");
-                    return false;
                 }
                 else
                 {

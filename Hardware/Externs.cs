@@ -356,7 +356,7 @@ namespace Hardware
         [StructLayout(LayoutKind.Sequential)]
         public class SP_REMOVEDEVICE_PARAMS
         {
-            public SP_CLASSINSTALL_HEADER ClassInstallHeader;
+            public SP_CLASSINSTALL_HEADER ClassInstallHeader = new SP_CLASSINSTALL_HEADER();
             public int Scope;
             public int HwProfile;
         }
