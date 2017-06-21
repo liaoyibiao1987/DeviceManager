@@ -257,6 +257,7 @@ namespace Hardware
                 if (!res || RequiredSize == 0)
                 {
                     Debug.WriteLine("类型不正确");
+
                 }
             }
             if (res == true)
