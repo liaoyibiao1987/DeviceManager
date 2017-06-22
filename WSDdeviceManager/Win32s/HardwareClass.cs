@@ -4,6 +4,7 @@ using System.Text;
 using System.Runtime.InteropServices;
 using System.Diagnostics;
 using static WSDdeviceManager.Win32s.Externs;
+using WSDdeviceManager.Logger;
 
 namespace WSDdeviceManager.Win32s
 {
@@ -19,13 +20,14 @@ namespace WSDdeviceManager.Win32s
         #region 公共事件
         public List<DeviceEntity> GetHiddenDevice()
         {
+            WSDLogger.WriterDebugger("Start GetHiddenDevice");
             SP_DEVINFO_DATA DeviceInfoData = new SP_DEVINFO_DATA();
             List<DeviceEntity> list = new List<DeviceEntity>();
             List<DeviceEntity> listCurrent = new List<DeviceEntity>();
             IntPtr hDevInfo = SetupDiGetClassDevs(GUID_DEVCLASS_PORTS, 0, IntPtr.Zero, DIGCF_NOSET);
             if (hDevInfo.ToInt64() == -1)
             {
-                Debug.WriteLine("SetupDiGetClassDevs: 获取设备错误。");
+                WSDLogger.WriterDebugger("SetupDiGetClassDevs: 获取设备错误。");
             }
             else
             {
@@ -123,7 +125,9 @@ namespace WSDdeviceManager.Win32s
                 }
                 SetupDiDestroyDeviceInfoList(devs);
                 SetupDiDestroyDeviceInfoList(devsNow);
+                ScanForHardwareChange();
             }
+            WSDLogger.WriterDebugger("End GetHiddenDevice");
             return list;
         }
         /// <summary>
@@ -193,16 +197,16 @@ namespace WSDdeviceManager.Win32s
                             //}
                             if (CM_Get_Device_IDA(DeviceInfoData.devInst, DeviceID, 254, 0) == CR_SUCCESS)
                             {
-                                bool bMatch = true;
+                                bool bMatch = false;
                                 foreach (string search in match)
                                 {
-                                    if (!DeviceID.ToString().ToLower().Contains(search.ToLower()))
+                                    if (DeviceID.ToString().ToLower().Contains(search.ToLower()) == true)
                                     {
-                                        bMatch = false;
+                                        bMatch = true;
                                         break;
                                     }
                                 }
-                                if (bMatch)
+                                if (bMatch == true)
                                 {
                                     OpenClose(hDevInfo, DeviceInfoData, bEnable, true);
                                 }
@@ -217,6 +221,29 @@ namespace WSDdeviceManager.Win32s
             catch (Exception ex)
             {
                 throw new Exception("枚举设备信息出错！", ex);
+            }
+            return true;
+        }
+
+        private bool ScanForHardwareChange()
+        {
+            int devInst = 0;
+            int status;
+
+            //得到设备管理树的根结点 
+            status = CM_Locate_DevNodeW(ref devInst, string.Empty, CM_LOCATE_DEVNODE_NORMAL);
+            if (status != CR_SUCCESS)
+            {
+                WSDLogger.WriterError("CM_Locate_DevNodeW 失败");
+                return false;
+            }
+
+            //刷新 
+            status = CM_Reenumerate_DevNode(devInst, CM_REENUMERATE_ASYNCHRONOUS); //CM_REENUMERATE_ASYNCHRONOUS 异步方式可以立即响应
+            if (status != CR_SUCCESS)
+            {
+                WSDLogger.WriterError("CM_Reenumerate_DevNode 失败");
+                return false;
             }
             return true;
         }

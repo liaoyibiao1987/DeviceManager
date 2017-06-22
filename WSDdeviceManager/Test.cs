@@ -1,32 +1,22 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Diagnostics;
 using System.Linq;
-using System.ServiceProcess;
 using System.Text;
-using System.Threading.Tasks;
 using WSDdeviceManager.Logger;
 using WSDdeviceManager.Win32s;
 
 namespace WSDdeviceManager
 {
-    public partial class WSDService : ServiceBase
+    public class Test
     {
         HardwareClass hc;
-        public WSDService()
-        {
-            InitializeComponent();
-        }
-
-        protected override void OnStart(string[] args)
+        public void Start()
         {
             try
             {
-                WSDLogger.WriterDebugger("OnStart");
+                    WSDLogger.WriterDebugger("OnStart");
                 hc = new HardwareClass();
-                hc.AllowNotifications(this.ServiceHandle, true);
+                //hc.AllowNotifications(this.ServiceHandle, true);
                 MaintainPort();
             }
             catch (Exception e)
@@ -59,20 +49,6 @@ namespace WSDdeviceManager
                 WSDLogger.WriterDebugger("没有发现隐藏COM端口.");
             }
             WSDLogger.WriterDebugger("End MaintainPort");
-        }
-
-        protected override void OnStop()
-        {
-            try
-            {
-                //  清理非托管资源
-                hc.Dispose(this.ServiceHandle);
-                hc = null;
-            }
-            catch (Exception e)
-            {
-                Debug.WriteLine("OnStop 发生错误" + e.ToString());
-            }
         }
     }
 }

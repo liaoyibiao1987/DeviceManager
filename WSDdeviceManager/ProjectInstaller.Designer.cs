@@ -33,15 +33,16 @@
             // 
             // serviceProcessInstaller1
             // 
-            this.serviceProcessInstaller1.Account = System.ServiceProcess.ServiceAccount.LocalService;
+            this.serviceProcessInstaller1.Account = System.ServiceProcess.ServiceAccount.LocalSystem;
             this.serviceProcessInstaller1.Password = null;
             this.serviceProcessInstaller1.Username = null;
             // 
             // serviceInstaller1
             // 
-            this.serviceInstaller1.Description = "AAAAAAAAAAAAAAAAAAA";
-            this.serviceInstaller1.DisplayName = "AAAAAAAAAAAAAAAAAAA";
+            this.serviceInstaller1.Description = "WSD Service";
+            this.serviceInstaller1.DisplayName = "强制删除隐藏的COM端口。";
             this.serviceInstaller1.ServiceName = "WSDService";
+            this.serviceInstaller1.StartType = System.ServiceProcess.ServiceStartMode.Automatic;
             // 
             // ProjectInstaller
             // 

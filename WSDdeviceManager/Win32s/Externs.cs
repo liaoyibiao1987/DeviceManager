@@ -159,6 +159,15 @@ namespace WSDdeviceManager.Win32s
         public const int DI_REMOVEDEVICE_GLOBAL = 0x00000001;
         public const int DI_REMOVEDEVICE_CONFIGSPECIFIC = 0x00000002;
 
+
+        public const int CM_LOCATE_DEVNODE_NORMAL = 0x00000000;
+        public const int CM_LOCATE_DEVNODE_PHANTOM = 0x00000001;
+        public const int CM_LOCATE_DEVNODE_CANCELREMOVE = 0x00000002;
+        public const int CM_LOCATE_DEVNODE_NOVALIDATION = 0x00000004;
+        public const int CM_LOCATE_DEVNODE_BITS = 0x00000007;
+
+        public const int CM_REENUMERATE_RETRY_INSTALLATION = 0x00000002;
+        public const int CM_REENUMERATE_ASYNCHRONOUS = 0x00000004;
         /// <summary>
         /// 注册设备或者设备类型，在指定的窗口返回相关的信息
         /// </summary>
@@ -168,6 +177,8 @@ namespace WSDdeviceManager.Win32s
         /// <returns></returns>
         [DllImport("user32.dll", CharSet = CharSet.Auto)]
         public static extern IntPtr RegisterDeviceNotification(IntPtr hRecipient, DEV_BROADCAST_DEVICEINTERFACE NotificationFilter, UInt32 Flags);
+
+
 
         /// <summary>
         /// 通过名柄，关闭指定设备的信息。
@@ -273,7 +284,11 @@ namespace WSDdeviceManager.Win32s
         [DllImport("setupapi.dll")]
         public static extern int CM_Get_Device_IDA(int dnDevInst, StringBuilder Buffer, int BufferLen, int ulFlags);
 
+        [DllImport("setupapi.dll")]
+        public static extern int CM_Locate_DevNodeW(ref int dnDevInst, string pDeviceID, int ulFlags);
 
+        [DllImport("setupapi.dll")]
+        public static extern int CM_Reenumerate_DevNode(int dnDevInst, int ulFlags);
 
         [DllImport("kernel32.dll")]
         public static extern uint GetLastError();

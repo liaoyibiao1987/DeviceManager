@@ -4,6 +4,7 @@ using System.Linq;
 using System.ServiceProcess;
 using System.Text;
 using System.Threading.Tasks;
+using WSDdeviceManager.Logger;
 
 namespace WSDdeviceManager
 {
@@ -14,12 +15,14 @@ namespace WSDdeviceManager
         /// </summary>
         static void Main()
         {
-            ServiceBase[] ServicesToRun;
-            ServicesToRun = new ServiceBase[]
-            {
-                new WSDService()
-            };
-            ServiceBase.Run(ServicesToRun);
+            //ServiceBase[] ServicesToRun;
+            //ServicesToRun = new ServiceBase[]
+            //{
+            //    new WSDService()
+            //};
+            //ServiceBase.Run(ServicesToRun);
+            Test ts = new Test();
+            ts.Start();
         }
     }
 }
