@@ -23,7 +23,7 @@ namespace WSDInstaller
 
         public static string stopservice = string.Format("sc stop {0}", SERVICENAME);
         public static string deleteservice = string.Format("sc delete {0}", SERVICENAME);
-        public static string serviceUninstallCommand = string.Format(@"{2}\r\n{3}\r\n{0} -U {1}", dotNetPath, serviceEXEPath, stopservice, deleteservice);//卸载服务时使用的dos命令  
+        public static string serviceUninstallCommand = string.Format(@"{0} -U {1}", dotNetPath, serviceEXEPath);//卸载服务时使用的dos命令  
         public Installer()
         {
             InitializeComponent();
@@ -38,6 +38,15 @@ namespace WSDInstaller
         }
         public static string Cmd(string[] cmd)
         {
+            //ProcessStartInfo startInfo = new ProcessStartInfo();
+            //startInfo.FileName = "cmd.exe";
+            //startInfo.Arguments = "/c C:\\Windows\\System32\\cmd.exe";
+            //startInfo.RedirectStandardInput = true;
+            //startInfo.RedirectStandardOutput = true;
+            //startInfo.RedirectStandardError = true;
+            //startInfo.UseShellExecute = false;
+            //startInfo.Verb = "RunAs";
+
             Process p = new Process();
             p.StartInfo.FileName = "cmd.exe";
             p.StartInfo.UseShellExecute = false;
@@ -89,7 +98,8 @@ namespace WSDInstaller
                 if (File.Exists(dotNetPath))
                 {
                     string[] cmd = new string[] { serviceInstallCommand };
-                    string ss = Cmd(cmd);
+                    string result = Cmd(cmd);
+                    txtResult.Text = result;
                 }
             }
             catch
@@ -109,8 +119,9 @@ namespace WSDInstaller
             {
                 if (File.Exists(dotNetPath))
                 {
-                    string[] cmd = new string[] { serviceUninstallCommand };
-                    string ss = Cmd(cmd);
+                    string[] cmd = new string[3] { stopservice, deleteservice, serviceUninstallCommand };
+                    string result = Cmd(cmd);
+                    txtResult.Text = result;
                 }
             }
             catch
